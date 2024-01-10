@@ -117,3 +117,7 @@ trusted_clients =
 	::1/128
 	FD00::/8
 
+[timelapse]
+output_path = ~/printer_data/timelapse/
+frame_path = /tmp/timelapse/printer
+
