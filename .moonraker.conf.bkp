@@ -121,3 +121,7 @@ trusted_clients =
 output_path = ~/printer_data/timelapse/
 frame_path = /tmp/timelapse/printer
 
+[spoolman]
+server = http://192.168.30.2:8000
+sync_rate = 5
+
