@@ -1,0 +1,5 @@
+RatOS-*
+printer-*
+*.bkp
+*.log
+.RatOS_repo_backup/
