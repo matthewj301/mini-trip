@@ -1,0 +1,43 @@
+{
+  "printer": "mini-trip",
+  "machine": "Tri-Zero rebuild",
+  "role": "consumer",
+  "contract_version": 1,
+  "master_repo": "../doomcube",
+  "contract_path": "docs/fleet/v1/contract.md",
+  "entrypoint": "printer.cfg",
+  "printer_config_root": "/home/pi/printer_data/config",
+  "evidence_status": "Standalone Kalico source migration reviewed;11 recorder regressions and69 template compilations pass; offline and not physically qualified",
+  "capabilities": {
+    "current_firmware_config": "Standalone Kalico",
+    "target_macro_infrastructure": "Doomcube shared fleet",
+    "probe": "ZeroClick",
+    "leveling": "triple-Z tilt",
+    "toolhead": "rapidburner.cfg",
+    "mmu": "Optional guarded lifecycle paths; no MMU hardware configured",
+    "target_firmware": "Kalico, fresh flash (user confirmed 2026-09-20)",
+    "installed_target_status": "Offline; clean install assumed by user; MCU USB IDs pending"
+  },
+  "exceptions": [
+    {
+      "behavior": "probe",
+      "decision": "Local ZeroClick wrappers replace RatOS; retain original docking geometry and fresh synchronous QUERY_PROBE checks",
+      "evidence": "custom/probes/probe_macros.cfg"
+    },
+    {
+      "behavior": "startup",
+      "decision": "Non-Beacon150C probing; no chamber sensor; no fake T0; standalone fallback purge",
+      "evidence": "custom/macros/print.cfg"
+    },
+    {
+      "behavior": "saved variables",
+      "decision": "ratos-variables.cfg filename and all old values preserved; SAVE_CONFIG unchanged",
+      "evidence": "custom/kalico/base.cfg"
+    },
+    {
+      "behavior": "deployment",
+      "decision": "Offline clean-install source migration; board serial paths and physical commissioning required",
+      "evidence": "docs/kalico-migration.md"
+    }
+  ]
+}
