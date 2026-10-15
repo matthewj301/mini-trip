@@ -34,8 +34,9 @@ def verify(cfg, kalico_source):
         # Every active extension must exist in clean Kalico; no RatOS/addon requirement.
         kind=section.split()[0]
         if kind not in ('printer','mcu','constants','extruder') and not kind.startswith('stepper_'):
-            module=kalico_source/'klippy/extras'/kind
-            assert module.with_suffix('.py').is_file() or (module/'__init__.py').is_file(), ('unavailable module',section)
+            # Kalico loads built-in modules from extras/ and installed add-ons from plugins/.
+            modules=[kalico_source/'klippy'/d/kind for d in ('extras','plugins')]
+            assert any(m.with_suffix('.py').is_file() or (m/'__init__.py').is_file() for m in modules), ('unavailable module',section)
         assert not (kind.startswith('ratos') or section == 'gcode_macro RatOS'), ('RatOS section remains',section)
         if cfg.has_option(section,'gcode'):
             source=cfg.get(section,'gcode').strip()
@@ -53,7 +54,7 @@ def verify(cfg, kalico_source):
     assert cfg.getfloat('stepper_y','position_max')==118
     assert cfg.getfloat('stepper_z','position_max')==115
     assert cfg.getfloat('extruder','pid_kp')==16.863
-    assert cfg.getfloat('heater_bed','pid_kp')==72.068
+    # Bed heater is not wired yet (commented out; old PID kept in docs/kalico-migration.md).
     assert cfg.getfloat('printer','max_accel')==50000
     assert cfg.getfloat('tmc5160 stepper_x','run_current')==1.8
     assert cfg.getfloat('tmc2209 extruder','run_current')==.85
@@ -66,10 +67,10 @@ def verify(cfg, kalico_source):
         for index,axis in enumerate('xy'):
             nozzle=xy[index]-cfg.getfloat('probe',axis+'_offset')
             assert cfg.getfloat('stepper_'+axis,'position_min') <= nozzle <= cfg.getfloat('stepper_'+axis,'position_max')
-    assert cfg.get('save_variables','filename').endswith('/ratos-variables.cfg')
+    assert cfg.get('save_variables','filename').endswith('/klipper-variables.cfg')
     assert not cfg.has_section('gcode_macro T0'), 'No fake tool system on a single extruder'
     vars={k[9:]:ast.literal_eval(v) for k,v in cfg.items('gcode_macro _PRINTER_VARS') if k.startswith('variable_')}
-    assert vars['default_chamber_target']==0 and not vars['chamber_fan']
+    assert vars['default_chamber_target']==0 and vars['chamber_fan']=='Aux_Fan' and vars['filter_fan']=='filter'
     print('PASS: Kalico include/SAVE_CONFIG parser; %d templates; local hardware invariants.' % compiled)
     print('MCU serials require installation-specific values. No runtime or physical qualification.')
     return compiled

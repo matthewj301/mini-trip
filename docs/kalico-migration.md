@@ -4,42 +4,45 @@ The active `printer.cfg` now uses local Kalico configuration and Doomcube's
 reviewed lifecycle. RatOS is not loaded. This is an offline source migration;
 the rebuilt machine has not been commissioned or print-tested.
 
-## Install-specific work
+## Install state (2026-10-14, host `pi@192.168.30.80`)
 
-1. Install Kalico and Moonraker for user `pi` with the usual
-   `~/printer_data/{config,gcodes,comms}` layout. Use Kalico, not upstream Klipper:
-   these macros require native Python (`!!include`), synchronous `emit`,
-   `set_gcode_variable`, `wait_moves`, and `SET_KINEMATIC_POSITION SET_HOMED/CLEAR_HOMED`.
-2. Flash the Octopus Pro H723 and EBB36 v1.2 using their actual bootloader/USB
-   settings. In `custom/kalico/mcus.cfg`, replace both clearly marked serial
-   placeholders with the resulting `/dev/serial/by-id/...` paths. No RatOS udev
-   rules or Linux host MCU are needed by this configuration.
-3. Use this repository as `~/printer_data/config`, including its existing
-   `ratos-variables.cfg`. That filename is intentionally retained: existing keys
-   are not renamed/deleted, and fleet state keys are added by startup macros.
-   Moonraker's UDS path is `/home/pi/printer_data/comms/klippy.sock`.
-4. Install a normal Mainsail/Fluidd frontend separately. `moonraker.conf` no
-   longer loads RatOS defaults, its frontend fork, or its theme/update managers.
-   Existing authorization settings are retained.
-5. Shake&Tune and TMC Autotune profiles are retained but commented out in the
-   entrypoint so a clean Kalico installation has no missing extension dependency.
-   Install those packages before enabling the corresponding includes. Standard
-   TMC drivers use the retained currents and `driver_SGT: 1`, matching the prior
-   autotune sensorless threshold selection. Disabling autotune is not evidence
-   that its complete driver register tuning has been reproduced.
+Kalico `v2026.10.00-98-ga6796621`, Moonraker, Mainsail and klipper_tmc_autotune are installed; Octopus Pro H723,
+EBB36 v1.2 and the Klipper Expander are Katapult-flashed and connected by USB. This repo is deployed to
+`~/printer_data/config` by rsync; the pre-deploy stub config is backed up in `~/config-backup-20261014`.
+Layout follows the fleet (K3D/Doomcube):
 
-The serial placeholders deliberately prevent connection until the boards are
-identified. Nothing in this migration flashes, restarts, or moves the printer.
+- `printer.cfg`: entrypoint, `_PRINTER_VARS`, absolute includes, SAVE_CONFIG block.
+- `custom/mcus/`: one file per board (serials, pin aliases, MCU temp sensors). Expander MOSFET0-3 = PA0-PA3.
+- `custom/printers/tri-zero/`: drivers/hardware, limits, sensorless, base (persistence, pause/resume).
+- `custom/fans/`, `custom/sensors/`, `custom/macros/`, `custom/tuning/`.
+- Persistence is `klipper-variables.cfg` (fresh install; legacy RatOS keys dropped). `mainsail.cfg` is not included
+  (the fleet macros own PAUSE/RESUME/CANCEL_PRINT). KAMP is not used (fallback purge).
+- TMC Autotune is enabled. Shake&Tune is not installed. `custom/tuning/resonance.cfg` is disabled until the EBB36
+  firmware is rebuilt with `CONFIG_WANT_ADXL345=y`; the Octopus ADXL inherited from RatOS was removed.
+
+Installed-version checks (2026-10-14): Kalico parses the full config and compiles every template;
+`scripts/verify_migration.py` and the 11 recorder regressions pass. Klipper does not reach `ready` because the bed
+(heater PA1, thermistor PF3) and everything on the EBB36 (hotend PT1000 PA3, fans, probe) are not wired yet: open ADC
+inputs correctly shut the MCU down (`ADC out of range`). `[heater_bed]` and its saved PID block are removed until the bed
+is wired; old values: `pid_kp 72.068, pid_ki 1.430, pid_kd 908.054` (earlier build). Re-enable by uncommenting
+`[heater_bed]` in `custom/printers/tri-zero/hardware.cfg`. After such a shutdown the Octopus may need
+`FIRMWARE_RESTART` or a power cycle. Wire the EBB36 hotend sensor before the first connect.
+
+Assumptions needing physical confirmation:
+
+- Chamber thermistor on Octopus T0 (PF4): reads a plausible ~25 C NTC 100K value; type assumed
+  `NTC 100K MGB18-104F39050L32`. PF3 and PF5 read open.
+- Fan headers (pre-rebuild wiring plus the 2026-10-14 photo): FAN0 PA8 electronics, FAN1 PE5 + FAN2 PD12 motor,
+  FAN3 PD13 + FAN4 PD14 aux part cooling, FAN5 PD15 chamber filter; Expander MOSFET0/1 stepper-driver fans.
+- Retained earlier-build values (currents, 50,000 mm/s2, PID, probe offset, input shaper, skew) are not requalified.
 
 ## Ownership and retained hardware
 
-`custom/kalico/hardware.cfg` contains this printer's generated board pin aliases,
-base drivers, thermistor and heater definitions. Local rapidburner, Sherpa Mini
-10T, triple-Z, fan and limit profiles remain authoritative. `RatOS.cfg`, the old
-sensorless files and the external `RatOS/` symlink are inactive historical files.
-They are not edited or required by the active include chain.
+Board pin aliases live in `custom/mcus/`; drivers, extruder and kinematics in `custom/printers/tri-zero/hardware.cfg`,
+with Z drivers owned by `custom/steppers/tri-zero/z-steppers.cfg`. Rapidburner, Sherpa Mini 10T, triple-Z, fan and limit
+profiles remain authoritative. RatOS files were removed.
 
-The entire `SAVE_CONFIG` block is byte-for-byte unchanged: PID, probe offset,
+The entire `SAVE_CONFIG` block is unchanged except the removed bed PID block (see Install state): PID, probe offset,
 mesh, input shaper and skew profiles remain calibration history. The old saved
 mesh named `ratos` is not automatically loaded. Existing limits (including
 50,000 mm/s²) and calibration numbers describe the earlier build; they are not

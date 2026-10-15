@@ -7,7 +7,7 @@
   "contract_path": "docs/fleet/v1/contract.md",
   "entrypoint": "printer.cfg",
   "printer_config_root": "/home/pi/printer_data/config",
-  "evidence_status": "Standalone Kalico source migration reviewed;11 recorder regressions and69 template compilations pass; offline and not physically qualified",
+  "evidence_status": "Deployed 2026-10-14; Kalico parses full config; verifier and 11 recorder regressions pass; Klipper not ready (bed and toolboard unwired); not physically qualified",
   "capabilities": {
     "current_firmware_config": "Standalone Kalico",
     "target_macro_infrastructure": "Doomcube shared fleet",
@@ -16,7 +16,9 @@
     "toolhead": "rapidburner.cfg",
     "mmu": "Optional guarded lifecycle paths; no MMU hardware configured",
     "target_firmware": "Kalico, fresh flash (user confirmed 2026-09-20)",
-    "installed_target_status": "Offline; clean install assumed by user; MCU USB IDs pending"
+    "installed_target_status": "Kalico v2026.10.00-98-ga6796621; boards flashed; bed and toolboard not wired",
+    "chamber_sensor": "thermistor on Octopus T0 (monitoring only)",
+    "mcus": "Octopus Pro H723 + EBB36 v1.2 + Klipper Expander, USB"
   },
   "exceptions": [
     {
@@ -31,12 +33,12 @@
     },
     {
       "behavior": "saved variables",
-      "decision": "ratos-variables.cfg filename and all old values preserved; SAVE_CONFIG unchanged",
-      "evidence": "custom/kalico/base.cfg"
+      "decision": "klipper-variables.cfg (fleet standard); fresh install, legacy RatOS keys not carried over",
+      "evidence": "custom/printers/tri-zero/base.cfg"
     },
     {
       "behavior": "deployment",
-      "decision": "Offline clean-install source migration; board serial paths and physical commissioning required",
+      "decision": "rsync to ~/printer_data/config; stub backed up on host; physical commissioning required",
       "evidence": "docs/kalico-migration.md"
     }
   ]

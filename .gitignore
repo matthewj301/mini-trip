@@ -3,3 +3,11 @@ printer-*
 *.bkp
 *.log
 .RatOS_repo_backup/
+
+# Local editor and interpreter artifacts
+.DS_Store
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
