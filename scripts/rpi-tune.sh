@@ -2,6 +2,8 @@
 # Klipper-host Pi tuning, replicated from vcore3 (rat-race), verified there 2026-10-19: core 3 isolated and
 # reserved for klippy; everything else (moonraker, nginx, ...) kept on cores 0-2; USB autosuspend off.
 # Idempotent. Run ON the Pi as root: sudo ./rpi-tune.sh [--dry-run] [--overclock]. Takes effect after a reboot.
+# Also pins the CPU governor to performance (one shared clock domain: ondemand idles the whole chip, including
+# klippy's isolated core, at 600 MHz and adds ramp-up latency). Persisted via tmpfiles.d (applies at boot and now).
 # --overclock: mild 2.0 GHz (stock Pi 4 rev 1.5 is 1.8), no extra voltage, no force_turbo; for a heatsink+fan host.
 # vcore3's own overclock (2100 MHz, over_voltage=14, force_turbo=1) is watercooled and deliberately NOT copied.
 set -euo pipefail
@@ -31,5 +33,7 @@ run "printf '[Manager]\nDefaultCPUAffinity=0 1 2\n' > /etc/systemd/system.conf.d
 run "printf '[Service]\nCPUAffinity=3\n' > /etc/systemd/system/klipper.service.d/cpu-affinity.conf"
 # Wi-Fi power save off (vcore3 does this via an iw udev rule; NetworkManager hosts use wifi.powersave=2).
 run "printf '[connection]\nwifi.powersave = 2\n' > /etc/NetworkManager/conf.d/wifi-powersave-off.conf"
+run "printf 'w /sys/devices/system/cpu/cpufreq/policy0/scaling_governor - - - - performance\\n' > /etc/tmpfiles.d/cpu-governor.conf"
+run "systemd-tmpfiles --create /etc/tmpfiles.d/cpu-governor.conf"
 run "systemctl daemon-reload"
 echo "Done. Reboot to apply; then verify: cat /sys/devices/system/cpu/isolated (3), taskset -pc \$(pgrep -f klippy.py) (3)."

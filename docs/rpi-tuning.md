@@ -15,9 +15,12 @@ Reserves CPU core 3 for `klippy` so USB/serial timing is not disturbed by Moonra
 | systemd manager | `DefaultCPUAffinity=0 1 2` (`/etc/systemd/system.conf.d/cpu-affinity.conf`) | All services default to cores 0-2 |
 | `klipper.service` | `CPUAffinity=3` (drop-in `klipper.service.d/cpu-affinity.conf`) | Only klippy runs on core 3 |
 | NetworkManager | `wifi.powersave = 2` (`conf.d/wifi-powersave-off.conf`) | Wi-Fi power save off (vcore3 uses an `iw` udev rule instead) |
+| CPU governor | `performance` (`/etc/tmpfiles.d/cpu-governor.conf`) | Pi 4 has one clock domain; `ondemand` idles the whole chip (incl. klippy's core 3) at 600 MHz and ramps on demand. Measured on tri-zero: 2000 -> 600 MHz within seconds of idle |
 | `config.txt` (optional) | `[pi4] arm_freq=2000` | Mild overclock, `--overclock` only |
 
-Already standard on these hosts, nothing to do: `noatime` on `/`, `ondemand` governor.
+Already standard on these hosts, nothing to do: `noatime` on `/`. The stock governor is `ondemand` (set at boot by
+`raspi-config.service`); it is NOT left as-is, see the governor row. On vcore3 `force_turbo=1` pins the clock at 2.1 GHz
+so its governor never mattered, but it is set to `performance` too for consistency.
 
 ## Apply
 
@@ -43,6 +46,7 @@ taskset -pc $(pgrep -f klippy.py | head -1)          # 3
 taskset -pc $(pgrep -f moonraker | head -1)          # 0-2
 grep -o "isolcpus=3 nohz_full=3 rcu_nocbs=3 usbcore.autosuspend=-1" /proc/cmdline
 cat /sys/module/usbcore/parameters/autosuspend       # -1
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor   # performance
 vcgencmd get_throttled                               # 0x0
 ```
 
@@ -53,7 +57,7 @@ Then confirm Klipper is `ready` and every MCU is in `ls /dev/serial/by-id/`.
 - **vcore3** is watercooled and runs `arm_freq=2100`, `over_voltage=14`, `force_turbo=1`. Do not copy that to
   air-cooled hosts.
 - **tri-zero** (GeeekPi low-profile heatsink + PWM fan) uses `arm_freq=2000` only: stock Pi 4 rev 1.5 is 1800 MHz, no
-  extra voltage, no `force_turbo` so the governor still idles down. Validate any host with a load test and watch
+  extra voltage, no `force_turbo` (the `performance` governor holds 2.0 GHz; there is no idle downclock). Validate any host with a load test and watch
   `vcgencmd get_throttled` (must stay `0x0`) and `measure_temp`.
 - Skip `--overclock` entirely if the host has no active cooling. Klippy gains little from clock speed; core isolation
   is the real benefit.
@@ -71,5 +75,5 @@ Then confirm Klipper is `ready` and every MCU is in `ls /dev/serial/by-id/`.
 
 | Host | Date | Overclock | Notes |
 | --- | --- | --- | --- |
-| vcore3 (rat-race) | before 2026-10-19 | 2100 MHz, watercooled | Reference; klipper unit edited in place rather than a drop-in |
-| tri-zero (mini-trip) | 2026-10-19 | 2000 MHz, heatsink+fan | Via `scripts/rpi-tune.sh --overclock` |
+| vcore3 (rat-race) | before 2026-10-19 | 2100 MHz, watercooled | Reference; klipper unit edited in place rather than a drop-in. Governor set to `performance` 2026-10-19 (was `ondemand`, moot under force_turbo) |
+| tri-zero (mini-trip) | 2026-10-19 | 2000 MHz, heatsink+fan | Via `scripts/rpi-tune.sh --overclock`; governor `performance` |
