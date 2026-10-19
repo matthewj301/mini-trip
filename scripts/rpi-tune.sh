@@ -28,7 +28,7 @@ if ((OC)); then
   grep -q '^arm_freq=' "$CFG" || run "printf '\\n[pi4]\\narm_freq=2000\\n' >> $CFG"
 fi
 
-run "mkdir -p /etc/systemd/system.conf.d /etc/systemd/system/klipper.service.d /etc/NetworkManager/conf.d"
+run "mkdir -p /etc/systemd/system.conf.d /etc/systemd/system/klipper.service.d /etc/NetworkManager/conf.d /etc/tmpfiles.d"
 run "printf '[Manager]\nDefaultCPUAffinity=0 1 2\n' > /etc/systemd/system.conf.d/cpu-affinity.conf"
 run "printf '[Service]\nCPUAffinity=3\n' > /etc/systemd/system/klipper.service.d/cpu-affinity.conf"
 # Wi-Fi power save off (vcore3 does this via an iw udev rule; NetworkManager hosts use wifi.powersave=2).

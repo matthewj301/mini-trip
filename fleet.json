@@ -7,7 +7,7 @@
   "contract_path": "docs/fleet/v1/contract.md",
   "entrypoint": "printer.cfg",
   "printer_config_root": "/home/pi/printer_data/config",
-  "evidence_status": "Deployed 2026-10-14; Kalico parses full config; verifier and 11 recorder regressions pass; Klipper not ready (bed and toolboard unwired); not physically qualified",
+  "evidence_status": "Deployed and re-verified 2026-10-19; Kalico ready with Octopus, EBB36 and Expander connected; bed and hotend sensors read plausible temperatures; hotend MPC (uncalibrated), bed watermark (no PID); verifier (69 templates) and 11 recorder regressions pass on host; not physically qualified (no motion, no heating, no calibration)",
   "capabilities": {
     "current_firmware_config": "Standalone Kalico",
     "target_macro_infrastructure": "Doomcube shared fleet",
@@ -16,9 +16,11 @@
     "toolhead": "rapidburner.cfg",
     "mmu": "Optional guarded lifecycle paths; no MMU hardware configured",
     "target_firmware": "Kalico, fresh flash (user confirmed 2026-09-20)",
-    "installed_target_status": "Kalico v2026.10.00-98-ga6796621; boards flashed; bed and toolboard not wired",
+    "installed_target_status": "Kalico v2026.10.00-98-ga6796621; all three boards connected; bed and toolboard wired; Pi tuned (core 3 isolated, performance governor, 2.0 GHz)",
     "chamber_sensor": "thermistor on Octopus T0 (monitoring only)",
-    "mcus": "Octopus Pro H723 + EBB36 v1.2 + Klipper Expander, USB"
+    "mcus": "Octopus Pro H723 + EBB36 v1.2 + Klipper Expander, USB",
+    "filament_sensor": "BTT SFS V2.0 on Octopus PG12 (switch) / PG13 (motion); polarity not yet verified",
+    "hotend_control": "MPC, tk.cfg identical to Doomcube; calibration pending"
   },
   "exceptions": [
     {

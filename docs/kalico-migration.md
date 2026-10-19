@@ -20,13 +20,11 @@ Layout follows the fleet (K3D/Doomcube):
 - TMC Autotune is enabled. Shake&Tune is not installed. `custom/tuning/resonance.cfg` is disabled until the EBB36
   firmware is rebuilt with `CONFIG_WANT_ADXL345=y`; the Octopus ADXL inherited from RatOS was removed.
 
-Installed-version checks (2026-10-14): Kalico parses the full config and compiles every template;
-`scripts/verify_migration.py` and the 11 recorder regressions pass. Klipper does not reach `ready` because the bed
-(heater PA1, thermistor PF3) and everything on the EBB36 (hotend PT1000 PA3, fans, probe) are not wired yet: open ADC
-inputs correctly shut the MCU down (`ADC out of range`). `[heater_bed]` and its saved PID block are removed until the bed
-is wired; old values: `pid_kp 72.068, pid_ki 1.430, pid_kd 908.054` (earlier build). Re-enable by uncommenting
-`[heater_bed]` in `custom/printers/tri-zero/hardware.cfg`. After such a shutdown the Octopus may need
-`FIRMWARE_RESTART` or a power cycle. Wire the EBB36 hotend sensor before the first connect.
+Installed-version checks (2026-10-19): Kalico parses the full config and compiles every template (69); `scripts/verify_migration.py`
+and the 11 recorder regressions pass on the host (they need the Pi's absolute `/home/pi/...` includes, so run them there from
+`~/printer_data/config/scripts` with `/home/pi/klippy-env/bin/python`). Klipper reaches `ready` with all three boards connected.
+The 2026-10-14 `ADC out of range` shutdowns are resolved: the bed and EBB36 hotend sensors are wired and read plausible values.
+The EBB36 has previously hung the Pi at boot when attached; unplug it before rebooting, replug, then `FIRMWARE_RESTART`.
 
 Added 2026-10-19: BTT SFS V2.0 on Octopus (`custom/sensors/sfs.cfg`; switch `PG12`, motion `PG13`, aliases in
 `custom/mcus/octopus-pro-h723.cfg`; `PG13` doubles as the unused `z0_diag_pin`). ZeroClick probe moved to EBB36 `PA4`

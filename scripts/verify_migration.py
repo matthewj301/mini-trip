@@ -49,12 +49,21 @@ def verify(cfg, kalico_source):
             compiled+=1
     assert cfg.get('printer','kinematics')=='corexy'
     assert cfg.getfloat('probe','z_offset')==9.199
-    assert cfg.get('probe','pin')=='^toolboard_t0:PB8'
+    assert cfg.get('probe','pin')=='^toolboard_t0:probe_pin'
+    assert 'probe_pin=PA4' in cfg.get('board_pins toolboard_t0','aliases').replace(' ',''), 'ZeroClick is on EBB36 PA4'
     assert cfg.getfloat('stepper_x','position_max')==118
     assert cfg.getfloat('stepper_y','position_max')==118
     assert cfg.getfloat('stepper_z','position_max')==115
-    assert cfg.getfloat('extruder','pid_kp')==16.863
-    # Bed heater is not wired yet (commented out; old PID kept in docs/kalico-migration.md).
+    # Hotend is MPC (Doomcube-identical tk.cfg); the earlier-build PID block must not return via SAVE_CONFIG.
+    assert cfg.get('extruder','control')=='mpc' and not cfg.has_option('extruder','pid_kp')
+    assert cfg.getfloat('extruder','heater_power')==80 and cfg.get('extruder','cooling_fan')=='fan'
+    # Bed is wired (2026-10-19); watermark control until an attended PID_CALIBRATE.
+    assert cfg.has_section('heater_bed') and not cfg.has_option('heater_bed','pid_kp')
+    # SFS V2.0 on Octopus PG12 (switch) / PG13 (motion) via board aliases.
+    assert cfg.get('filament_switch_sensor filament_switch','switch_pin')=='^sfs_switch_pin'
+    assert cfg.get('filament_motion_sensor filament_motion','switch_pin')=='^sfs_motion_pin'
+    aliases=cfg.get('board_pins btt-octopus-pro-h723-11','aliases').replace(' ','')
+    assert 'sfs_switch_pin=PG12' in aliases and 'sfs_motion_pin=PG13' in aliases
     assert cfg.getfloat('printer','max_accel')==50000
     assert cfg.getfloat('tmc5160 stepper_x','run_current')==1.8
     assert cfg.getfloat('tmc2209 extruder','run_current')==.85
@@ -70,6 +79,7 @@ def verify(cfg, kalico_source):
     assert cfg.get('save_variables','filename').endswith('/klipper-variables.cfg')
     assert not cfg.has_section('gcode_macro T0'), 'No fake tool system on a single extruder'
     vars={k[9:]:ast.literal_eval(v) for k,v in cfg.items('gcode_macro _PRINTER_VARS') if k.startswith('variable_')}
+    assert vars['skew_profile']=='', 'earlier-build skew must not load until re-measured'
     assert vars['default_chamber_target']==0 and vars['chamber_fan']=='Aux_Fan' and vars['filter_fan']=='filter'
     print('PASS: Kalico include/SAVE_CONFIG parser; %d templates; local hardware invariants.' % compiled)
     print('MCU serials require installation-specific values. No runtime or physical qualification.')
