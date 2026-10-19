@@ -28,6 +28,17 @@ is wired; old values: `pid_kp 72.068, pid_ki 1.430, pid_kd 908.054` (earlier bui
 `[heater_bed]` in `custom/printers/tri-zero/hardware.cfg`. After such a shutdown the Octopus may need
 `FIRMWARE_RESTART` or a power cycle. Wire the EBB36 hotend sensor before the first connect.
 
+Added 2026-10-19: BTT SFS V2.0 on Octopus (`custom/sensors/sfs.cfg`; switch `PG12`, motion `PG13`, aliases in
+`custom/mcus/octopus-pro-h723.cfg`; `PG13` doubles as the unused `z0_diag_pin`). ZeroClick probe moved to EBB36 `PA4`
+(alias `toolboard_t0:probe_pin`, pull-up, polarity unchanged). Parsed and `ready` on the host; sensor polarity and probe
+attach/detach states not yet exercised.
+Bed wired and enabled (`[heater_bed]`, watermark control until an attended `PID_CALIBRATE`; thermistor reads room temp).
+Hotend now uses MPC: `custom/hotends/tk.cfg` is identical to Doomcube's (same hotend/heater/PT1000; `heater_power 80`,
+`cooling_fan: fan`, max_temp 500) and is the single owner of hotend model/limits; `hardware.cfg` keeps only wiring
+(pins, pull-up). The stale earlier-build extruder PID block was removed from SAVE_CONFIG. MPC is uncalibrated: run
+`MPC_CALIBRATE HEATER=extruder FAN_BREAKPOINTS=7` attended (heats to 200 C) before any hotend heating. Doomcube's saved
+MPC constants were deliberately not copied. Pi tuning from vcore3 is staged in `scripts/rpi-tune.sh` (not yet applied; needs reboot).
+
 Assumptions needing physical confirmation:
 
 - Chamber thermistor on Octopus T0 (PF4): reads a plausible ~25 C NTC 100K value; type assumed
