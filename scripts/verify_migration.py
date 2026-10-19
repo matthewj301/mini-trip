@@ -70,6 +70,8 @@ def verify(cfg, kalico_source):
     for axis in ('z','z1','z2'):
         assert cfg.getfloat('stepper_'+axis,'rotation_distance')==40
         assert cfg.getint('stepper_'+axis,'microsteps')==128
+    assert cfg.get('bed_mesh','probe_count').replace(' ','')=='5,5'
+    for axis in ('z','z1','z2'): assert cfg.get('autotune_tmc stepper_'+axis,'tuning_goal')=='silent'
     # Mesh corners are probe coordinates; check the required nozzle travel.
     for option in ('mesh_min','mesh_max'):
         xy=[float(x) for x in cfg.get('bed_mesh',option).split(',')]
