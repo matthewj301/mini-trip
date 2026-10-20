@@ -127,21 +127,11 @@ Order, easiest and least risky first:
 3. **doomcube**: Bullseye is 32-bit userland, which **cannot be converted to 64-bit in place**, and an in-place path
    would have to step 11 -> 12 -> 13 (no skipping). Reflash only.
 
-Reflash procedure (per host, printer idle, do not touch the running card):
-
-1. **Capture state** from the old host: `~/printer_data/config` (already in git), `~/printer_data/database`
-   (Moonraker DB: history, Spoolman and update-manager state), `~/printer_data/gcodes`, crowsnest/KlipperScreen config,
-   `/etc/udev/rules.d`, CAN config (`can0` interface file, doomcube), `/etc/sudoers.d`, Wi-Fi/static-IP settings, and
-   `klipper_mcu` build config if the host MCU is used. Record `pip freeze` and `systemctl list-unit-files --state=enabled`.
-2. **Flash a spare card/SSD** with Raspberry Pi Imager (64-bit, Lite for headless): set hostname, user `pi`, SSH key and
-   Wi-Fi in the customization step so it boots reachable.
-3. **Install the stack** with KIAUH: Kalico/Klipper, Moonraker, the web UI, crowsnest, KlipperScreen as needed. MCU
-   firmware is not touched by an OS change; do not reflash MCUs.
-4. **Restore** `printer_data` and the OS-level files from step 1, then `scripts/rpi-tune.sh [--overclock]` (set the
-   governor once, see Gotchas), and reboot.
-5. **Verify** with the block above, plus `FIRMWARE_RESTART` only once Klipper reports `ready` and every MCU and `can0`
-   is present. No motion until you choose to home.
-6. **Keep the old card** labeled and untouched for a week. Rollback is swapping it back.
+The full procedure lives in one place: the `rpi-os-upgrade` agent skill (`~/.claude/skills/rpi-os-upgrade/`). Ask an
+agent to "upgrade the OS on <printer>". It captures a manifest plus a state archive (repos pinned by SHA, installer
+symlinks, venv packages, services, CAN/udev/network, secrets, Moonraker DB, host MCU), waits while you swap in a spare
+card, rebuilds on Trixie 64-bit, restores everything, and proves equivalence by diffing a fresh capture against the old
+one (no motion at any point). The old card stays untouched as the rollback.
 
 If an in-place upgrade is ever attempted anyway: full card image first, change `sources.list`/`sources.list.d` to the
 next codename, `apt update && apt full-upgrade`, answer config-file prompts by keeping local versions of `cmdline.txt`,
