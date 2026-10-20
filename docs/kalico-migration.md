@@ -7,8 +7,10 @@ the rebuilt machine has not been commissioned or print-tested.
 ## Install state (2026-10-14, host `pi@192.168.30.80`)
 
 Kalico `v2026.10.00-98-ga6796621`, Moonraker, Mainsail and klipper_tmc_autotune are installed; Octopus Pro H723,
-EBB36 v1.2 and the Klipper Expander are Katapult-flashed and connected by USB. This repo is deployed to
-`~/printer_data/config` by rsync; the pre-deploy stub config is backed up in `~/config-backup-20261014`.
+EBB36 v1.2 and the Klipper Expander are Katapult-flashed and connected by USB. `~/printer_data/config` is a git checkout of this repo's `main` (set up 2026-10-19; the Pi has a GitHub deploy key). A daily
+cron job (`5 4 * * *`: `git add .; git commit -m 'automated backup'; git push`, the fleet standard) commits and pushes Pi-side
+changes, including `klipper-variables.cfg` and `SAVE_CONFIG` output. Update the Pi with `git pull` there; do not rsync into it.
+The pre-deploy stub config is backed up in `~/config-backup-20261014`.
 Layout follows the fleet (K3D/Doomcube):
 
 - `printer.cfg`: entrypoint, `_PRINTER_VARS`, absolute includes, SAVE_CONFIG block.
@@ -131,3 +133,13 @@ Reference source inspected: local Kalico `84a4105726e22c5c15943e791b5cdb3beff52e
 RatOS configuration `7582e8cc0d9a89f282d29b24a2b36e0c9e97419c` for inherited
 Voron V0.1 bed thermistor and sensorless behavior. The local printer profiles,
 not the upstream defaults, supply physical docking geometry and overrides.
+
+## Display (2026-10-19)
+
+HelixScreen v1.0.5 (`curl -sSL https://releases.helixscreen.org/install.sh | sh`, systemd service `helixscreen`, install dir
+`~/helixscreen`, config dir `~/printer_data/config/helixscreen/`, Moonraker update-manager entry) drives the 800x480 HDMI-A-2
+panel. KlipperScreen is not installed (`KlipperScreen.conf` in this repo is unused). The panel is mounted upside down:
+`display.rotate: 180` in `~/helixscreen/config/settings.json` (software rotation; DRM has no hardware rotation here). That
+file lives in the install dir and is not in the git backup. The USB touch controller is a QDtech MPI5001 (`event4`); it can
+enumerate late, so `sudo systemctl restart helixscreen` after replugging it. The printer type is left unset for the user to
+choose on the first-run wizard. The polkit power-off/reboot rule failed to install, so on-screen Shutdown/Reboot may be refused.

@@ -27,3 +27,5 @@ Documentation and local checks do not authorize deployment, flashing or motion.
 Trace includes from `printer.cfg`; absolute `/home/pi/...` includes map to this checkout.
 Resolve installed firmware and macro ownership before replacing start/end/pause/
 resume/cancel or probe hooks. Fix and verify master defects before propagating them.
+
+The Pi's `~/printer_data/config` is a checkout of `main` with a daily automated-backup job: update it with `git pull`, never rsync into it, and expect `klipper-variables.cfg` and SAVE_CONFIG to be committed from the Pi. Display/touch notes are in [install state](docs/kalico-migration.md).
