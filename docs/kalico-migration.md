@@ -13,7 +13,7 @@ Layout follows the fleet (K3D/Doomcube):
 
 - `printer.cfg`: entrypoint, `_PRINTER_VARS`, absolute includes, SAVE_CONFIG block.
 - `custom/mcus/`: one file per board (serials, pin aliases, MCU temp sensors). Expander MOSFET0-3 = PA0-PA3.
-- `custom/printers/tri-zero/`: drivers/hardware, limits, sensorless, base (persistence, pause/resume).
+- `custom/tri-zero/` (fleet layout, as `custom/doomcube/`): `tri-zero.cfg`, `hardware.cfg`, `limits.cfg`, `steppers.cfg` + `steppers/{xy,z}/`, `sensorless-homing/`. `custom/default_includes.cfg` owns persistence and pause/resume; `custom/mcus/rpi.cfg` owns `[virtual_sdcard]`.
 - `custom/fans/`, `custom/sensors/`, `custom/macros/`, `custom/tuning/`.
 - Persistence is `klipper-variables.cfg` (fresh install; legacy RatOS keys dropped). `mainsail.cfg` is not included
   (the fleet macros own PAUSE/RESUME/CANCEL_PRINT). KAMP is not used (fallback purge).
@@ -41,14 +41,15 @@ Assumptions needing physical confirmation:
 
 - Chamber thermistor on Octopus T0 (PF4): reads a plausible ~25 C NTC 100K value; type assumed
   `NTC 100K MGB18-104F39050L32`. PF3 and PF5 read open.
-- Fan headers (pre-rebuild wiring plus the 2026-10-14 photo): FAN0 PA8 electronics, FAN1 PE5 + FAN2 PD12 motor,
-  FAN3 PD13 + FAN4 PD14 aux part cooling, FAN5 PD15 chamber filter; Expander MOSFET0/1 stepper-driver fans.
+- Fan headers are confirmed (live `SET_FAN_SPEED` test, 2026-10-19; aliases in `custom/mcus/octopus-pro-h723.cfg`): FAN0 PA8 deck bay
+  electronics, FAN1 PE5 chamber filter, FAN2 PD12 + FAN3 PD13 aux part cooling, FAN4 PD14 + FAN5 PD15 motor cooling;
+  Expander MOSFET2 (PA2) + MOSFET3 (PA3) stepper-driver fans (MOSFET0/1 tested empty).
 - Retained earlier-build values (currents, 50,000 mm/s2, PID, probe offset, input shaper, skew) are not requalified.
 
 ## Ownership and retained hardware
 
-Board pin aliases live in `custom/mcus/`; drivers, extruder and kinematics in `custom/printers/tri-zero/hardware.cfg`,
-with Z drivers owned by `custom/steppers/tri-zero/z-steppers.cfg`. Rapidburner, Sherpa Mini 10T, triple-Z, fan and limit
+Board pin aliases live in `custom/mcus/`; drivers, extruder and kinematics in `custom/tri-zero/hardware.cfg`,
+with Z drivers owned by `custom/tri-zero/steppers/z/steppers.cfg`. Rapidburner, Sherpa Mini 10T, triple-Z, fan and limit
 profiles remain authoritative. RatOS files were removed.
 
 The entire `SAVE_CONFIG` block is unchanged except the removed bed PID block (see Install state): PID, probe offset,

@@ -19,9 +19,9 @@ Documentation and local checks do not authorize deployment, flashing or motion.
 | Task | Read |
 | --- | --- |
 | Shared macro migration or interface change | [Fleet route](docs/fleet.md), `fleet.json`, master contract and findings |
-| Hardware or active config | `printer.cfg` includes, `custom/mcus/`, `custom/printers/tri-zero/`, toolhead/stepper profiles; [install state](docs/kalico-migration.md) |
+| Hardware or active config | `printer.cfg` includes, `custom/mcus/`, `custom/tri-zero/`, toolhead/stepper profiles; [install state](docs/kalico-migration.md) |
 | Homing or leveling | `custom/probes/zeroclick.cfg`, `custom/probes/probe_macros.cfg` |
-| Lifecycle or saved variables | `custom/macros/`, `custom/printers/tri-zero/base.cfg`; `klipper-variables.cfg` is the persistence target |
+| Lifecycle or saved variables | `custom/macros/`, `custom/default_includes.cfg`; `klipper-variables.cfg` is the persistence target |
 | Firmware tuning | Available `klipper-prod` skill; characterize the rebuilt machine rather than importing tuned values |
 
 Trace includes from `printer.cfg`; absolute `/home/pi/...` includes map to this checkout.

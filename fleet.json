@@ -36,7 +36,7 @@
     {
       "behavior": "saved variables",
       "decision": "klipper-variables.cfg (fleet standard); fresh install, legacy RatOS keys not carried over",
-      "evidence": "custom/printers/tri-zero/base.cfg"
+      "evidence": "custom/default_includes.cfg"
     },
     {
       "behavior": "deployment",
