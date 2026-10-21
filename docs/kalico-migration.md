@@ -143,3 +143,8 @@ panel. KlipperScreen is not installed (`KlipperScreen.conf` in this repo is unus
 file lives in the install dir and is not in the git backup. The USB touch controller is a QDtech MPI5001 (`event4`); it can
 enumerate late, so `sudo systemctl restart helixscreen` after replugging it. The printer type is left unset for the user to
 choose on the first-run wizard. The polkit power-off/reboot rule failed to install, so on-screen Shutdown/Reboot may be refused.
+
+## Stepper buzz results (2026-10-20)
+
+- Z: `stepper_z` = back motor, `stepper_z1` = front right, `stepper_z2` = front left (viewed from the front). Matches `[z_tilt]` `z_positions` order in `custom/probes/zeroclick.cfg`. All three move the bed the same way: (-) toward the toolhead, (+) away. Z directions are correct as configured (z2 has `!z0_dir_pin`).
+- XY: with the original pin assignment `G1 X10` went right but `G1 Y10` went forward, so the CoreXY A/B roles were mirrored. dir pins cannot fix that, so the X and Y driver slots are swapped in `custom/mcus/octopus-pro-h723.cfg` (`x_*` = MOTOR 1, `y_*` = MOTOR 0); `hardware.cfg` now uses the aliases and `printer.cfg` no longer sets `dir_pin`. Re-verify `G91` / `G1 X10` (right) and `G1 Y10` (back) after deploying, then sensorless homing.
