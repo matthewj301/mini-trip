@@ -9,7 +9,7 @@ the rebuilt machine has not been commissioned or print-tested.
 Kalico `v2026.10.00-98-ga6796621`, Moonraker, Mainsail and klipper_tmc_autotune are installed; Octopus Pro H723,
 EBB36 v1.2 and the Klipper Expander are Katapult-flashed and connected by USB. `~/printer_data/config` is a git checkout of this repo's `main` (set up 2026-10-19; the Pi has a GitHub deploy key). A daily
 cron job (`5 4 * * *`: `git add .; git commit -m 'automated backup'; git push`, the fleet standard) commits and pushes Pi-side
-changes, including `klipper-variables.cfg` and `SAVE_CONFIG` output. Update the Pi with `git pull` there; do not rsync into it.
+changes, including `klipper-variables.cfg` and `SAVE_CONFIG` output. Update the Pi with `git pull` there; do not rsync into it. Since 2026-10-20 a second cron job (`*/10 * * * *`, `git pull --rebase --autostash`) pulls `main` automatically, and the 04:05 backup now pulls before pushing; both share a `flock` on `/tmp/config-git.lock`. A pull never restarts Klipper: run `RESTART` to load new config. Pull log: `/tmp/config-pull.log`.
 The pre-deploy stub config is backed up in `~/config-backup-20261014`.
 Layout follows the fleet (K3D/Doomcube):
 
